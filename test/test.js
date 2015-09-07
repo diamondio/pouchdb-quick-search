@@ -572,7 +572,7 @@ function tests(dbName, dbType) {
         };
         return db.search(opts);
       }).then(function (res) {
-        var ids = res.rows.map(function (x) { return x.id; });
+        var ids = res.rows.map(function (x) { return x.id; }).sort().reverse();
         ids.should.deep.equal(['2', '10']);
       });
     });
