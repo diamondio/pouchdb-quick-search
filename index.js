@@ -167,9 +167,6 @@ exports.search = utils.toPromise(function (opts, callback) {
   // token more than once, in fact I think even Lucene does this
   // special cases like boingo boingo and mother mother are rare
   var queryTerms = uniq(getTokenStream(q, index));
-  if (!queryTerms.length) {
-    return callback(null, {total_rows: 0, rows: []});
-  }
   queryOpts.keys = queryTerms.map(function (queryTerm) {
     return TYPE_TOKEN_COUNT + queryTerm;
   });
@@ -195,7 +192,6 @@ exports.search = utils.toPromise(function (opts, callback) {
 
   // step 1
   pouch._search_query(mapFun, queryOpts).then(function (res) {
-
     if (!res.rows.length) {
       return callback(null, {total_rows: 0, rows: []});
     }
@@ -223,6 +219,7 @@ exports.search = utils.toPromise(function (opts, callback) {
       }
 
       var docTerms = docIdsToFieldsToQueryTerms[row.id][field];
+      if (!docTerms) return;
       if (!(term in docTerms)) {
         docTerms[term] = 1;
       } else {
@@ -246,10 +243,6 @@ exports.search = utils.toPromise(function (opts, callback) {
           delete docIdsToFieldsToQueryTerms[docId]; // ignore this doc
         }
       });
-    }
-
-    if (!Object.keys(docIdsToFieldsToQueryTerms).length) {
-      return callback(null, {total_rows: 0, rows: []});
     }
 
     var keys = Object.keys(docIdsToFieldsToQueryTerms).map(function (docId) {
